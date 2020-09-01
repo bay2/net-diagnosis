@@ -12,6 +12,7 @@
 + (instancetype)shareInstance;
 
 @property (nonatomic) dispatch_queue_t pingQueue;
+@property (nonatomic) dispatch_queue_t pingQueueConcurrent;
 @property (nonatomic) dispatch_queue_t quickPingQueue;
 @property (nonatomic) dispatch_queue_t traceQueue;
 @property (nonatomic) dispatch_queue_t asyncQueue;
@@ -35,6 +36,7 @@
 {
     if (self = [super init]) {
         _pingQueue = dispatch_queue_create("pnet_ping_queue", DISPATCH_QUEUE_SERIAL);
+        _pingQueueConcurrent = dispatch_queue_create("pnet_ping_queue", DISPATCH_QUEUE_CONCURRENT);
         _quickPingQueue = dispatch_queue_create("pnet_qping_queue", DISPATCH_QUEUE_SERIAL);
         _traceQueue = dispatch_queue_create("pnet_trace_queue", DISPATCH_QUEUE_SERIAL);
         _asyncQueue = dispatch_queue_create("Pnet_async_queue", DISPATCH_QUEUE_SERIAL);
@@ -45,6 +47,13 @@
 + (void)pnet_ping_async:(dispatch_block_t)block
 {
     dispatch_async([PNetQueue shareInstance].pingQueue, ^{
+        block();
+    });
+}
+
++ (void)pnet_ping_concurrent_async:(dispatch_block_t)block
+{
+    dispatch_async([PNetQueue shareInstance].pingQueueConcurrent, ^{
         block();
     });
 }

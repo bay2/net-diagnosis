@@ -22,6 +22,8 @@
 
 @interface PhonePing : NSObject
 
+- (instancetype)initWithConcurrent:(BOOL)concurrent;
+
 @property (nonatomic,strong) id<PhonePingDelegate> delegate;
 
 - (void)startPingHosts:(NSString *)host packetCount:(int)count;

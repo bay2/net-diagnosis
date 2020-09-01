@@ -23,6 +23,7 @@
 @property (nonatomic,strong) NSString *host;
 @property (nonatomic,strong) NSDate   *sendDate;
 @property (nonatomic,assign) int pingPacketCount;
+@property (nonatomic,assign) BOOL concurrent;
 @end
 
 @implementation PhonePing
@@ -32,6 +33,17 @@
     if ([super init]) {
         
         _isStopPingThread = NO;
+        _concurrent = NO;
+    }
+    return self;
+}
+
+- (instancetype)initWithConcurrent:(BOOL)concurrent
+{
+    if ([super init]) {
+        
+        _isStopPingThread = NO;
+        _concurrent = concurrent;
     }
     return self;
 }
@@ -109,9 +121,21 @@
         _pingPacketCount = count;
     }
     
-    [PNetQueue pnet_ping_async:^{
-        [self sendAndrecevPingPacket];
-    }];
+    
+    if (_concurrent) {
+        [PNetQueue pnet_ping_concurrent_async:^{
+            [self sendAndrecevPingPacket];
+        }];
+    } else {
+        [PNetQueue pnet_ping_async:^{
+            [self sendAndrecevPingPacket];
+        }];
+    }
+    
+    
+    
+    
+    
 }
 
 - (void)sendAndrecevPingPacket
