@@ -19,6 +19,7 @@
 @end
 
 typedef void (^PNTcpPingHandler)(NSMutableString *);
+typedef void (^PNTcpPingResultHandler)(NSArray<PNTcpPingResult *> *);
 
 @interface PNTcpPing : NSObject
 
@@ -33,7 +34,8 @@ typedef void (^PNTcpPingHandler)(NSMutableString *);
  @return `PNTcpPing` instance
  */
 + (instancetype)start:(NSString * _Nonnull)host
-             complete:(PNTcpPingHandler _Nonnull)complete;
+             complete:(PNTcpPingHandler _Nonnull)complete
+             complete2:(PNTcpPingResultHandler _Nonnull)complete2;
 
 
 /**
@@ -48,7 +50,8 @@ typedef void (^PNTcpPingHandler)(NSMutableString *);
 + (instancetype)start:(NSString * _Nonnull)host
                  port:(NSUInteger)port
                 count:(NSUInteger)count
-             complete:(PNTcpPingHandler _Nonnull)complete;
+             complete:(PNTcpPingHandler _Nonnull)complete
+             complete2:(PNTcpPingResultHandler _Nonnull)complete2;
 
 
 /**

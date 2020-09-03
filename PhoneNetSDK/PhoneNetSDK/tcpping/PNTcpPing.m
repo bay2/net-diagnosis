@@ -73,10 +73,16 @@ void tcp_conn_handler()
 @property (nonatomic,readonly) NSUInteger port;
 @property (nonatomic,readonly) NSUInteger count;
 @property (copy,readonly) PNTcpPingHandler complete;
+@property (copy,readonly) PNTcpPingResultHandler complete2;
 @property (atomic) BOOL isStop;
 @property (nonatomic,assign) BOOL isSucc;
 
 @property (nonatomic,copy) NSMutableString *pingDetails;
+
+@property (nonatomic, strong) NSMutableArray *pingResults;
+
+
+
 @end
 
 @implementation PNTcpPing
@@ -85,12 +91,14 @@ void tcp_conn_handler()
                 port:(NSUInteger)port
                count:(NSUInteger)count
             complete:(PNTcpPingHandler)complete
+            complete2:(PNTcpPingResultHandler)complete2
 {
     if (self = [super init]) {
         _host = host;
         _port = port;
         _count = count;
         _complete = complete;
+        _complete2 = complete2;
         _isStop = NO;
         _isSucc = YES;
     }
@@ -99,16 +107,18 @@ void tcp_conn_handler()
 
 + (instancetype)start:(NSString * _Nonnull)host
              complete:(PNTcpPingHandler _Nonnull)complete
+             complete2:(PNTcpPingResultHandler _Nonnull)complete2
 {
-    return [[self class] start:host port:80 count:3 complete:complete];
+    return [[self class] start:host port:80 count:3 complete:complete complete2:complete2];
 }
 
 + (instancetype)start:(NSString * _Nonnull)host
                  port:(NSUInteger)port
                 count:(NSUInteger)count
              complete:(PNTcpPingHandler _Nonnull)complete
+            complete2:(PNTcpPingResultHandler _Nonnull)complete2
 {
-    PNTcpPing *tcpPing = [[PNTcpPing alloc] init:host port:port count:count complete:complete];
+    PNTcpPing *tcpPing = [[PNTcpPing alloc] init:host port:port count:count complete:complete complete2:complete2];
     g_tcpPing = tcpPing;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [tcpPing sendAndRec];
@@ -128,6 +138,7 @@ void tcp_conn_handler()
 - (void)sendAndRec
 {
     _pingDetails = [NSMutableString stringWithString:@"\n"];
+    _pingResults = @[].mutableCopy;
     NSString *ip = [self convertDomainToIp:_host];
     if (ip == NULL) {
         return;
@@ -166,8 +177,10 @@ void tcp_conn_handler()
         
         if (self.isSucc) {
             PNTcpPingResult *pingRes  = [self constPingRes:code ip:ip durations:intervals loss:loss count:index];
+            [self.pingResults addObject:pingRes];
             [self.pingDetails appendString:pingRes.description];
         }
+        self.complete2(self.pingResults);
         self.complete(self.pingDetails);
         free(intervals);
     });
